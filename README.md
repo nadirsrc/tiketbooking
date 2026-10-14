@@ -1,58 +1,162 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Pemesanan Tiket Event (Ticket Box)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web berbasis Laravel yang dirancang untuk mengelola katalog tiket event, memfasilitasi transaksi pemesanan tiket konser, festival, dan seminar oleh publik, serta menyediakan modul back-office terintegrasi untuk kebutuhan administrasi data dan rekapitulasi pesanan.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Daftar Isi
+- [Teknologi yang Digunakan](#teknologi-yang-digunakan)
+- [Fitur Utama Sistem](#fitur-utama-sistem)
+- [Struktur Basis Data](#struktur-basis-data)
+- [Prasyarat Sistem](#prasyarat-sistem)
+- [Instalasi dan Konfigurasi](#instalasi-dan-konfigurasi)
+- [Kredensial Pengujian](#kredensial-pengujian)
+- [Lisensi](#lisensi)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Teknologi yang Digunakan
 
-## Learning Laravel
+- **Framework Back-End**: [Laravel 11](https://laravel.com/)
+- **Bahasa Pemrograman**: PHP >= 8.2
+- **Basis Data**: MySQL
+- **Front-End**: Blade Template Engine, Tailwind CSS, JavaScript Vanilla
+- **Autentikasi**: Laravel Breeze
+- **Manajemen Ketergantungan**: Composer & NPM
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Fitur Utama Sistem
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 1. Antarmuka Pelanggan (Customer / Public)
+- **Katalog Tiket Event**: Menampilkan daftar tiket event aktif yang dilengkapi poster, kategori, deskripsi singkat, dan harga satuan.
+- **Filter Kategori Dinamis**: Penyaringan kategori event (Musik, Festival, Seminar) secara instan di sisi klien tanpa perlu memuat ulang (*reload*) halaman.
+- **Formulir Pemesanan Multi-Item**: Pemesan dapat memilih jumlah kuantitas tiket pada beberapa event sekaligus dalam satu kali transaksi.
+- **Integritas Transaksi Atomik (ACID)**: Penerapan `DB::beginTransaction()` untuk menjamin bahwa data header pesanan (`orders`) dan rincian item (`order_details`) tersimpan secara utuh, atau dibatalkan otomatis (*rollback*) apabila terjadi kendala sistem.
 
-## Agentic Development
+### 2. Antarmuka Administrator (Back-Office)
+- **Autentikasi Terproteksi**: Akses modul administrasi dibatasi melalui middleware autentikasi sesi.
+- **Manajemen Master Tiket (CRUD Event)**:
+  - Pencatatan event baru beserta harga dan kuota informasi.
+  - Unggah poster gambar dengan validasi format berkas (JPEG, PNG, JPG) dan batas ukuran maksimal 2MB.
+  - Pembaruan data tiket dan pembersihan otomatis berkas gambar lama dari penyimpanan server saat diganti.
+  - Penghapusan data tiket yang terhubung secara berjenjang (*cascade delete*) ke relasi rincian pesanan.
+- **Dashboard Rekapitulasi Pesanan**:
+  - Monitoring transaksi masuk secara berkala (*real-time view*).
+  - Optimasi query basis data menggunakan *Eager Loading* untuk mengeliminasi masalah *N+1 Query Problem*.
+  - Rincian komprehensif: ID pesanan, nama pemesan, email, rincian tiket beserta subtotal, serta total akumulasi biaya.
+  - Kontrol status transaksi interaktif (*Pending*, *Confirmed*, *Cancelled*).
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
 
-```bash
-composer require laravel/boost --dev
+## Struktur Basis Data
 
-php artisan boost:install
-```
+Entitas utama yang membangun alur kerja aplikasi meliputi:
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+1. **`events`**  
+   Menyimpan data master tiket acara.  
+   *Kolom*: `id`, `title`, `category` (enum: Musik, Festival, Seminar), `ticket_price`, `description`, `image`, `timestamps`.
 
-## Contributing
+2. **`orders`**  
+   Menyimpan header data pemesanan pelanggan.  
+   *Kolom*: `id`, `customer_name`, `customer_email`, `total_price`, `status` (enum: Pending, Confirmed, Cancelled), `timestamps`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. **`order_details`**  
+   Menyimpan rincian setiap tiket yang dipesan dalam satu transaksi pesanan.  
+   *Kolom*: `id`, `order_id` (foreign key -> orders), `event_id` (foreign key -> events), `quantity`, `subtotal`, `timestamps`.
 
-## Code of Conduct
+4. **`users`**  
+   Menyimpan akun pengguna untuk otentikasi administrator ke dashboard back-office.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Prasyarat Sistem
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Sebelum menjalankan proyek di lingkungan lokal, pastikan perangkat telah terpasang perangkat lunak berikut:
 
-## License
+- PHP versi 8.2 atau yang lebih tinggi (beserta ekstensi pdo_mysql, mbstring, openssl, gd/fileinfo)
+- Composer versi 2.x
+- Node.js (versi LTS disarankan) dan NPM
+- MySQL / MariaDB Server
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Instalasi dan Konfigurasi
+
+Ikuti langkah-langkah berikut untuk menyiapkan aplikasi di lingkungan lokal:
+
+1. **Kloning Repositori**:
+   ```bash
+   git clone https://github.com/nadirsrc/tiketbooking.git
+   cd tiketbooking
+   ```
+
+2. **Instalasi Dependensi PHP**:
+   ```bash
+   composer install
+   ```
+
+3. **Instalasi Dependensi Front-End**:
+   ```bash
+   npm install
+   ```
+
+4. **Konfigurasi Berkas Lingkungan (`.env`)**:
+   Salin berkas template lingkungan dan buat file `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Buka berkas `.env` dan sesuaikan parameter koneksi basis data:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=db_ticket_konser
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+5. **Generate Kunci Aplikasi**:
+   ```bash
+   php artisan key:generate
+   ```
+
+6. **Migrasi Basis Data dan Seeding**:
+   Jalankan migrasi tabel beserta data awal (*dummy events & akun admin*):
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **Pembuatan Tautan Media Penyimpanan (*Storage Link*)**:
+   Buat symbolic link dari folder storage publik ke direktori public web:
+   ```bash
+   php artisan storage:link
+   ```
+
+8. **Kompilasi Aset dan Menjalankan Server Pengembangan**:
+   Jalankan server aplikasi Laravel:
+   ```bash
+   php artisan serve
+   ```
+   Di jendela terminal terpisah, jalankan bundling aset Tailwind/Vite:
+   ```bash
+   npm run dev
+   ```
+
+Aplikasi dapat diakses melalui peramban web pada alamat: `http://127.0.0.1:8000`
+
+---
+
+## Kredensial Pengujian
+
+Gunakan akun administrator bawaan hasil seeding untuk mengakses dashboard manajemen:
+
+- **URL Login**: `http://127.0.0.1:8000/login`
+- **Email**: `Admin@gmail.com`
+- **Password**: `password123`
+
+---
+
+## Lisensi
+
+Proyek ini dikembangkan menggunakan lisensi terbuka [MIT License](LICENSE).
