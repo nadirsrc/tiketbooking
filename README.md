@@ -17,8 +17,8 @@ Aplikasi web berbasis Laravel yang dirancang untuk mengelola katalog tiket event
 
 ## Teknologi yang Digunakan
 
-- **Framework Back-End**: [Laravel 11](https://laravel.com/)
-- **Bahasa Pemrograman**: PHP >= 8.2
+- **Framework Back-End**: [Laravel 13](https://laravel.com/)
+- **Bahasa Pemrograman**: PHP >= 8.5
 - **Basis Data**: MySQL
 - **Front-End**: Blade Template Engine, Tailwind CSS, JavaScript Vanilla
 - **Autentikasi**: Laravel Breeze
@@ -74,7 +74,7 @@ Entitas utama yang membangun alur kerja aplikasi meliputi:
 
 Sebelum menjalankan proyek di lingkungan lokal, pastikan perangkat telah terpasang perangkat lunak berikut:
 
-- PHP versi 8.2 atau yang lebih tinggi (beserta ekstensi pdo_mysql, mbstring, openssl, gd/fileinfo)
+- PHP versi 8.5 atau yang lebih tinggi (beserta ekstensi pdo_mysql, mbstring, openssl, gd/fileinfo)
 - Composer versi 2.x
 - Node.js (versi LTS disarankan) dan NPM
 - MySQL / MariaDB Server
