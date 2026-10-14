@@ -81,69 +81,40 @@ Sebelum menjalankan proyek di lingkungan lokal, pastikan perangkat telah terpasa
 
 ---
 
-## Instalasi dan Konfigurasi
+## Cara Menjalankan Project
 
-Ikuti langkah-langkah berikut untuk menyiapkan aplikasi di lingkungan lokal:
-
-1. **Kloning Repositori**:
+1. **Clone repository:**
    ```bash
    git clone https://github.com/nadirsrc/tiketbooking.git
    cd tiketbooking
    ```
 
-2. **Instalasi Dependensi PHP**:
+2. **Install dependensi:**
    ```bash
    composer install
-   ```
-
-3. **Instalasi Dependensi Front-End**:
-   ```bash
    npm install
    ```
 
-4. **Konfigurasi Berkas Lingkungan (`.env`)**:
-   Salin berkas template lingkungan dan buat file `.env`:
+3. **Setup environment (.env):**
+   Salin `.env.example` ke `.env`, buat database MySQL dengan nama `db_ticket_konser`, lalu generate app key:
    ```bash
    cp .env.example .env
-   ```
-   Buka berkas `.env` dan sesuaikan parameter koneksi basis data:
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=db_ticket_konser
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
-
-5. **Generate Kunci Aplikasi**:
-   ```bash
    php artisan key:generate
    ```
 
-6. **Migrasi Basis Data dan Seeding**:
-   Jalankan migrasi tabel beserta data awal (*dummy events & akun admin*):
+4. **Migrasi database, seeder & storage link:**
    ```bash
    php artisan migrate --seed
-   ```
-
-7. **Pembuatan Tautan Media Penyimpanan (*Storage Link*)**:
-   Buat symbolic link dari folder storage publik ke direktori public web:
-   ```bash
    php artisan storage:link
    ```
 
-8. **Kompilasi Aset dan Menjalankan Server Pengembangan**:
-   Jalankan server aplikasi Laravel:
-   ```bash
-   php artisan serve
-   ```
-   Di jendela terminal terpisah, jalankan bundling aset Tailwind/Vite:
+5. **Jalankan aplikasi:**
    ```bash
    npm run dev
+   php artisan serve
    ```
 
-Aplikasi dapat diakses melalui peramban web pada alamat: `http://127.0.0.1:8000`
+Akses aplikasi di browser pada alamat: `http://127.0.0.1:8000`
 
 ---
 
